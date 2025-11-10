@@ -44,7 +44,7 @@ func handlerValidateChirp(w http.ResponseWriter, req *http.Request) {
 		Body string `json:"body"`
 	}
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(req.Body)
@@ -62,5 +62,13 @@ func handlerValidateChirp(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, returnVals{Valid: true})
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+
+	cleanBody := getCleanedBody(params.Body, badWords)
+
+	respondWithJson(w, http.StatusOK, returnVals{CleanedBody: cleanBody})
 }
