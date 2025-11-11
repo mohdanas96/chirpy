@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,40 +34,4 @@ func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, _ *http.Request) {
 func (cfg *apiConfig) handlerResetMetrics(w http.ResponseWriter, _ *http.Request) {
 	cfg.fileServerHits.Store(0)
 	w.Write([]byte("Successful"))
-}
-
-func handlerValidateChirp(w http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
-
-	type reqParams struct {
-		Body string `json:"body"`
-	}
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
-
-	decoder := json.NewDecoder(req.Body)
-
-	params := reqParams{}
-	err := decoder.Decode(&params)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode body", err)
-		return
-	}
-
-	const maxChirpLength = 140
-	if len(params.Body) > maxChirpLength {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
-		return
-	}
-
-	badWords := map[string]struct{}{
-		"kerfuffle": {},
-		"sharbert":  {},
-		"fornax":    {},
-	}
-
-	cleanBody := getCleanedBody(params.Body, badWords)
-
-	respondWithJson(w, http.StatusOK, returnVals{CleanedBody: cleanBody})
 }
