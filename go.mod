@@ -1,4 +1,4 @@
-module github.com/mohdanas96/chirpy
+module github.com/mhmdanas10/chirpy
 
 go 1.25.1
 

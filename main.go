@@ -10,7 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/mohdanas96/chirpy/internal/database"
+	"github.com/mhmdanas10/chirpy/internal/database"
 )
 
 type apiConfig struct {
@@ -50,6 +50,7 @@ func main() {
 	mux.HandleFunc("POST /api/users", apiConfig.handlerCreateUser)
 	mux.HandleFunc("POST /api/chirps", apiConfig.handlerCreateChirp)
 	mux.HandleFunc("GET /api/chirps", apiConfig.GetAllChirps)
+	mux.HandleFunc("GET /api/chirps/{chirpID}", apiConfig.GetChirp)
 
 	server := &http.Server{Addr: port, Handler: mux}
 

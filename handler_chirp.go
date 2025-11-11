@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mohdanas96/chirpy/internal/database"
+	"github.com/mhmdanas10/chirpy/internal/database"
 )
 
 type Chirp struct {
@@ -68,7 +68,6 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, req *http.Reques
 
 func (cfg *apiConfig) GetAllChirps(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
-	fmt.Println("Working")
 
 	chirps, err := cfg.dbQ.GetAllChirps(context.Background())
 	if err != nil {
@@ -80,7 +79,6 @@ func (cfg *apiConfig) GetAllChirps(w http.ResponseWriter, req *http.Request) {
 
 	data := make([]Chirp, len(chirps))
 	for i := range chirps {
-		fmt.Println(len(chirps), "LENENNE")
 		data[i].ID = chirps[i].ID
 		data[i].Body = chirps[i].Body
 		data[i].CreatedAt = chirps[i].CreatedAt
@@ -89,6 +87,40 @@ func (cfg *apiConfig) GetAllChirps(w http.ResponseWriter, req *http.Request) {
 	}
 
 	respondWithJson(w, 200, data)
+}
+
+func (cfg *apiConfig) GetChirp(w http.ResponseWriter, req *http.Request) {
+	id := req.PathValue("chirpID")
+	if id == "" {
+		respondWithError(w, http.StatusBadRequest, "Chirp ID is required", nil)
+		return
+	}
+
+	type reponse struct {
+		Chirp
+	}
+
+	chirpID, err := uuid.Parse(id)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid id", err)
+		return
+	}
+
+	chirp, err := cfg.dbQ.GetOneChirp(context.Background(), chirpID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Invalid id. Chirp is not found", err)
+		return
+	}
+
+	respondWithJson(w, 200, reponse{
+		Chirp: Chirp{
+			ID:        chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body:      chirp.Body,
+			UserId:    chirp.UserID,
+		},
+	})
 }
 
 func getCleanedBody(body string, badWords map[string]struct{}) string {
